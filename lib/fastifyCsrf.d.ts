@@ -20,6 +20,7 @@ interface Options extends TokenOptions {
 	value?: (req: fastify.FastifyRequest) => string;
 	cookie?: fastify.CookieSerializeOptions | boolean;
 	ignoreMethods?: string[];
+	errorHandler?: (req: fastify.FastifyRequest, res: fastify.FastifyReply<any>) => void | any
 }
 
 declare const fastifyCsrf: fastify.Plugin<

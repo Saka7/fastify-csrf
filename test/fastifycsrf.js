@@ -463,3 +463,45 @@ test('csrf token authentication session based ignore method(POST)', (t) => {
 		});
 	});
 });
+
+test('custom error handler', (t) => {
+    t.plan(2);
+    const fastify = Fastify();
+    fastify.register(fastifyCookie);
+    fastify.register(fastifySession, {
+        cookieName: '_ses',
+        cookie: {path: '/', secure: false},
+        secret: 'a secret with minimum length of 32 characters'
+    });
+    fastify.register(fastifyFormBody);
+    fastify.register(fastifyCsrf, {
+        errorHandler: (req, res) => res.code(403).send('Invalid csrf')
+    });
+
+    fastify.get('/', (request, reply) => {
+        reply.send({csrf_secret: request.csrfToken()});
+    });
+
+    fastify.post('/data', (request, reply) => {
+        reply.send({status: 'ok'});
+    });
+
+    fastify.listen(0, (err) => {
+        fastify.server.unref();
+        t.error(err);
+        axios({
+            url: 'http://localhost:' + fastify.server.address().port + '/data',
+            method: 'POST',
+            headers: {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Cookie': '_ses=wrong'
+            },
+        })
+            .then(() => t.end())
+            .catch(err => {
+                t.equal(err.response.status, 403);
+                t.end();
+            });
+    });
+});

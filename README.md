@@ -44,6 +44,15 @@ For using session validation, skip cookie option and use other options according
  { key: 'your_secret_key_name', ignoreMethods: [/* request types */] }
  ```
  fastify-csrf uses fastify-session for sessions. Thus any option support by fastify-session is also valid for fastify-csrf.
+ 
+ 
+ #### errorHandler
+ 
+ ```javascript
+{errorHandler: async (req, res) => res.code(403).send()}
+```
+
+Custom error handler on invalid token
 
 # Usage
 Cookie based token validation.
